@@ -329,6 +329,10 @@ Future<void> fetchOrCloneShared({
   if (repository.existsSync()) {
     await ProgressNode.of(scope).wrap((scope, node) async {
       node.description = 'Fetching $remoteUrl';
+      await git.syncRemotes(
+        repository: repository,
+        remotes: {'origin': GitRemoteUrls.single(remoteUrl)},
+      );
       await git.fetch(repository: repository);
     });
   } else {

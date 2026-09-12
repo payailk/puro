@@ -6,6 +6,7 @@ import 'command.dart';
 import 'command_result.dart';
 import 'commands/build_shell.dart';
 import 'commands/clean.dart';
+import 'commands/config.dart';
 import 'commands/dart.dart';
 import 'commands/engine.dart';
 import 'commands/env_create.dart';
@@ -272,6 +273,7 @@ void main(List<String> args) async {
     ..addCommand(LsVersionsCommand())
     ..addCommand(EngineCommand())
     ..addCommand(PrefsCommand())
+    ..addCommand(ConfigCommand())
     ..addCommand(EvalCommand())
     ..addCommand(ReplCommand())
     ..addCommand(BuildShellCommand());

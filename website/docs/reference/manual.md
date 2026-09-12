@@ -193,3 +193,32 @@ We can manually delete unused caches with the `puro gc` command:
 $> puro gc                                                        
 [✓] Cleaned up caches and reclaimed 2.7GB
 ```
+
+## Mirror configuration
+
+Use `puro config` to save mirror URLs in the existing global preferences file:
+
+```sh
+puro config set flutterGitUrl https://your-mirror.example/flutter.git
+puro config set flutterStorageBaseUrl https://storage.flutter-io.cn
+puro config list
+puro config get flutterGitUrl
+puro config unset flutterGitUrl
+```
+
+Replace the example Git URL with a complete, trusted mirror of the upstream Flutter repository.
+Supported keys are `flutterGitUrl`, `engineGitUrl`, `dartSdkGitUrl`,
+`flutterStorageBaseUrl`, and `releasesJsonUrl`. Git URLs accept HTTP(S) or SSH;
+download URLs accept HTTP(S).
+
+Changes apply to subsequent commands. `get` and `list` show both the saved override
+(`null` when unset) and the effective value. Command-line overrides take precedence;
+`FLUTTER_STORAGE_BASE_URL` also takes precedence over the saved storage URL.
+Unless explicitly overridden, the releases JSON URL follows the storage URL.
+Use `unset` to remove an override and restore normal default resolution.
+
+Before fetching an existing shared Git repository, Puro updates its `origin` to
+the configured URL. Cached SDK archives are reused; changing a mirror does not
+force a download. Existing environment remotes are not rewritten by `config`.
+For a fork, keep using `--fork` for its origin; `flutterGitUrl` selects the shared
+upstream repository. These settings do not enable a custom OpenHarmony Dart SDK.
