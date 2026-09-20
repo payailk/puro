@@ -1,6 +1,7 @@
 import '../command.dart';
 import '../command_result.dart';
 import '../config.dart';
+import '../env/ohos.dart';
 import '../env/releases.dart';
 import '../env/upgrade.dart';
 import '../env/version.dart';
@@ -50,6 +51,15 @@ class EnvUpgradeCommand extends PuroCommand {
       );
     }
     environment.ensureExists();
+
+    if ((await environment.readPrefs(scope: scope)).ohos) {
+      if (channel != null) {
+        throw CommandError('OHOS environments use Git refs instead of --channel');
+      }
+      return upgradeOhosEnvironment(
+        scope: scope, environment: environment, ref: version, force: force,
+      );
+    }
 
     if (version == null && channel == null) {
       final prefs = await environment.readPrefs(scope: scope);

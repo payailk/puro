@@ -7,6 +7,7 @@ import '../command.dart';
 import '../command_result.dart';
 import '../config.dart';
 import '../env/env_shims.dart';
+import '../file_lock.dart';
 import '../install/bin.dart';
 import '../install/profile.dart';
 import '../logger.dart';
@@ -127,7 +128,13 @@ class PuroInstallCommand extends PuroCommand {
       final environment = config.getEnv(envDir.basename);
       if (!environment.flutterDir.childDirectory('.git').existsSync()) continue;
       await runOptional(scope, '`${environment.name}` post-upgrade', () async {
-        await installEnvShims(scope: scope, environment: environment);
+        if ((await environment.readPrefs(scope: scope)).ohos) {
+          await lockFile(scope, environment.updateLockFile, (_) async {
+            await installEnvShims(scope: scope, environment: environment);
+          }, mode: FileMode.append, exclusive: true);
+        } else {
+          await installEnvShims(scope: scope, environment: environment);
+        }
       });
     }
 

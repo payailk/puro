@@ -266,6 +266,7 @@ class EnvironmentInfoModel extends $pb.GeneratedMessage {
     FlutterVersionModel? version,
     $core.Iterable<$core.String>? projects,
     $core.String? dartVersion,
+    $core.bool? ohos,
   }) {
     final result = create();
     if (name != null) result.name = name;
@@ -273,6 +274,7 @@ class EnvironmentInfoModel extends $pb.GeneratedMessage {
     if (version != null) result.version = version;
     if (projects != null) result.projects.addAll(projects);
     if (dartVersion != null) result.dartVersion = dartVersion;
+    if (ohos != null) result.ohos = ohos;
     return result;
   }
 
@@ -294,6 +296,7 @@ class EnvironmentInfoModel extends $pb.GeneratedMessage {
         subBuilder: FlutterVersionModel.create)
     ..pPS(4, _omitFieldNames ? '' : 'projects')
     ..aOS(5, _omitFieldNames ? '' : 'dartVersion', protoName: 'dartVersion')
+    ..aOB(6, _omitFieldNames ? '' : 'ohos')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -355,6 +358,15 @@ class EnvironmentInfoModel extends $pb.GeneratedMessage {
   $core.bool hasDartVersion() => $_has(4);
   @$pb.TagNumber(5)
   void clearDartVersion() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get ohos => $_getBF(5);
+  @$pb.TagNumber(6)
+  set ohos($core.bool value) => $_setBool(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasOhos() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearOhos() => $_clearField(6);
 }
 
 class EnvironmentListModel extends $pb.GeneratedMessage {
@@ -728,6 +740,8 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
     $core.String? puroBuildTarget,
     $core.bool? shouldInstall,
     $core.bool? legacyPubCache,
+    $core.String? ohosFlutterGitUrl,
+    $core.String? ohosFlutterStorageBaseUrl,
   }) {
     final result = create();
     if (defaultEnvironment != null)
@@ -753,6 +767,9 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
     if (puroBuildTarget != null) result.puroBuildTarget = puroBuildTarget;
     if (shouldInstall != null) result.shouldInstall = shouldInstall;
     if (legacyPubCache != null) result.legacyPubCache = legacyPubCache;
+    if (ohosFlutterGitUrl != null) result.ohosFlutterGitUrl = ohosFlutterGitUrl;
+    if (ohosFlutterStorageBaseUrl != null)
+      result.ohosFlutterStorageBaseUrl = ohosFlutterStorageBaseUrl;
     return result;
   }
 
@@ -802,6 +819,10 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
         protoName: 'shouldInstall')
     ..aOB(19, _omitFieldNames ? '' : 'legacyPubCache',
         protoName: 'legacyPubCache')
+    ..aOS(20, _omitFieldNames ? '' : 'ohosFlutterGitUrl',
+        protoName: 'ohosFlutterGitUrl')
+    ..aOS(21, _omitFieldNames ? '' : 'ohosFlutterStorageBaseUrl',
+        protoName: 'ohosFlutterStorageBaseUrl')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -979,6 +1000,24 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   $core.bool hasLegacyPubCache() => $_has(17);
   @$pb.TagNumber(19)
   void clearLegacyPubCache() => $_clearField(19);
+
+  @$pb.TagNumber(20)
+  $core.String get ohosFlutterGitUrl => $_getSZ(18);
+  @$pb.TagNumber(20)
+  set ohosFlutterGitUrl($core.String value) => $_setString(18, value);
+  @$pb.TagNumber(20)
+  $core.bool hasOhosFlutterGitUrl() => $_has(18);
+  @$pb.TagNumber(20)
+  void clearOhosFlutterGitUrl() => $_clearField(20);
+
+  @$pb.TagNumber(21)
+  $core.String get ohosFlutterStorageBaseUrl => $_getSZ(19);
+  @$pb.TagNumber(21)
+  set ohosFlutterStorageBaseUrl($core.String value) => $_setString(19, value);
+  @$pb.TagNumber(21)
+  $core.bool hasOhosFlutterStorageBaseUrl() => $_has(19);
+  @$pb.TagNumber(21)
+  void clearOhosFlutterStorageBaseUrl() => $_clearField(21);
 }
 
 class PuroEnvPrefsModel extends $pb.GeneratedMessage {
@@ -988,6 +1027,8 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
     $core.String? engineForkRemoteUrl,
     $core.bool? precompileTool,
     $core.bool? patched,
+    $core.bool? ohos,
+    $core.String? ohosCacheSource,
   }) {
     final result = create();
     if (desiredVersion != null) result.desiredVersion = desiredVersion;
@@ -996,6 +1037,8 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
       result.engineForkRemoteUrl = engineForkRemoteUrl;
     if (precompileTool != null) result.precompileTool = precompileTool;
     if (patched != null) result.patched = patched;
+    if (ohos != null) result.ohos = ohos;
+    if (ohosCacheSource != null) result.ohosCacheSource = ohosCacheSource;
     return result;
   }
 
@@ -1019,6 +1062,9 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
     ..aOB(4, _omitFieldNames ? '' : 'precompileTool',
         protoName: 'precompileTool')
     ..aOB(5, _omitFieldNames ? '' : 'patched')
+    ..aOB(6, _omitFieldNames ? '' : 'ohos')
+    ..aOS(7, _omitFieldNames ? '' : 'ohosCacheSource',
+        protoName: 'ohosCacheSource')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1086,6 +1132,24 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
   $core.bool hasPatched() => $_has(4);
   @$pb.TagNumber(5)
   void clearPatched() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get ohos => $_getBF(5);
+  @$pb.TagNumber(6)
+  set ohos($core.bool value) => $_setBool(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasOhos() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearOhos() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get ohosCacheSource => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set ohosCacheSource($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasOhosCacheSource() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearOhosCacheSource() => $_clearField(7);
 }
 
 class PuroDotfileModel extends $pb.GeneratedMessage {

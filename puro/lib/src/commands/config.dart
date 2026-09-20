@@ -3,7 +3,7 @@ import '../command_result.dart';
 import '../config.dart';
 import '../terminal.dart';
 
-const _mirrorKeys = {'flutterGitUrl', 'engineGitUrl', 'dartSdkGitUrl', 'flutterStorageBaseUrl', 'releasesJsonUrl'};
+const _mirrorKeys = {'flutterGitUrl', 'engineGitUrl', 'dartSdkGitUrl', 'flutterStorageBaseUrl', 'releasesJsonUrl', 'ohosFlutterGitUrl', 'ohosFlutterStorageBaseUrl'};
 
 class ConfigCommand extends PuroCommand {
   ConfigCommand() {
@@ -78,6 +78,8 @@ class _ConfigActionCommand extends PuroCommand {
       'dartSdkGitUrl': config.dartSdkGitUrl,
       'flutterStorageBaseUrl': config.flutterStorageBaseUrl.toString(),
       'releasesJsonUrl': config.releasesJsonUrl.toString(),
+      'ohosFlutterGitUrl': config.ohosFlutterGitUrl,
+      'ohosFlutterStorageBaseUrl': config.ohosFlutterStorageBaseUrl,
     };
     final values = <String, dynamic>{};
     for (final selected in key == null ? _mirrorKeys : [key]) {

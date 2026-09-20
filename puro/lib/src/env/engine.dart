@@ -284,6 +284,8 @@ Future<void> syncFlutterCache({
   final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);
   final fs = config.fileSystem;
+  environmentPrefs ??= await environment.readPrefs(scope: scope);
+  if (environmentPrefs.ohos) return;
   final engineVersion = await getEngineVersion(
     scope: scope,
     flutterConfig: environment.flutter,
@@ -291,7 +293,6 @@ Future<void> syncFlutterCache({
   if (engineVersion == null) {
     return;
   }
-  environmentPrefs ??= await environment.readPrefs(scope: scope);
   final sharedCacheDir = config
       .getFlutterCache(engineVersion, patched: environmentPrefs.isPatched)
       .cacheDir;

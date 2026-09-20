@@ -102,10 +102,12 @@ const EnvironmentInfoModel$json = {
       '17': true
     },
     {'1': 'projects', '3': 4, '4': 3, '5': 9, '10': 'projects'},
+    {'1': 'ohos', '3': 6, '4': 1, '5': 8, '9': 2, '10': 'ohos', '17': true},
   ],
   '8': [
     {'1': '_version'},
     {'1': '_dartVersion'},
+    {'1': '_ohos'},
   ],
 };
 
@@ -114,7 +116,8 @@ final $typed_data.Uint8List environmentInfoModelDescriptor = $convert.base64Deco
     'ChRFbnZpcm9ubWVudEluZm9Nb2RlbBISCgRuYW1lGAEgASgJUgRuYW1lEhIKBHBhdGgYAiABKA'
     'lSBHBhdGgSMwoHdmVyc2lvbhgDIAEoCzIULkZsdXR0ZXJWZXJzaW9uTW9kZWxIAFIHdmVyc2lv'
     'bogBARIlCgtkYXJ0VmVyc2lvbhgFIAEoCUgBUgtkYXJ0VmVyc2lvbogBARIaCghwcm9qZWN0cx'
-    'gEIAMoCVIIcHJvamVjdHNCCgoIX3ZlcnNpb25CDgoMX2RhcnRWZXJzaW9u');
+    'gEIAMoCVIIcHJvamVjdHMSFwoEb2hvcxgGIAEoCEgCUgRvaG9ziAEBQgoKCF92ZXJzaW9uQg4K'
+    'DF9kYXJ0VmVyc2lvbkIHCgVfb2hvcw==');
 
 @$core.Deprecated('Use environmentListModelDescriptor instead')
 const EnvironmentListModel$json = {
@@ -428,6 +431,24 @@ const PuroGlobalPrefsModel$json = {
       '10': 'legacyPubCache',
       '17': true
     },
+    {
+      '1': 'ohosFlutterGitUrl',
+      '3': 20,
+      '4': 1,
+      '5': 9,
+      '9': 17,
+      '10': 'ohosFlutterGitUrl',
+      '17': true
+    },
+    {
+      '1': 'ohosFlutterStorageBaseUrl',
+      '3': 21,
+      '4': 1,
+      '5': 9,
+      '9': 18,
+      '10': 'ohosFlutterStorageBaseUrl',
+      '17': true
+    },
   ],
   '8': [
     {'1': '_defaultEnvironment'},
@@ -447,6 +468,8 @@ const PuroGlobalPrefsModel$json = {
     {'1': '_puroBuildTarget'},
     {'1': '_shouldInstall'},
     {'1': '_legacyPubCache'},
+    {'1': '_ohosFlutterGitUrl'},
+    {'1': '_ohosFlutterStorageBaseUrl'},
   ],
 };
 
@@ -468,13 +491,16 @@ final $typed_data.Uint8List puroGlobalPrefsModelDescriptor = $convert.base64Deco
     'yIAQESKQoNcHVyb0J1aWxkc1VybBgPIAEoCUgNUg1wdXJvQnVpbGRzVXJsiAEBEi0KD3B1cm9C'
     'dWlsZFRhcmdldBgQIAEoCUgOUg9wdXJvQnVpbGRUYXJnZXSIAQESKQoNc2hvdWxkSW5zdGFsbB'
     'gSIAEoCEgPUg1zaG91bGRJbnN0YWxsiAEBEisKDmxlZ2FjeVB1YkNhY2hlGBMgASgISBBSDmxl'
-    'Z2FjeVB1YkNhY2hliAEBQhUKE19kZWZhdWx0RW52aXJvbm1lbnRCEgoQX2xhc3RVcGRhdGVDaG'
-    'Vja0IZChdfbGFzdFVwZGF0ZU5vdGlmaWNhdGlvbkIgCh5fbGFzdFVwZGF0ZU5vdGlmaWNhdGlv'
-    'bkNvbW1hbmRCFAoSX2VuYWJsZVVwZGF0ZUNoZWNrQhYKFF9lbmFibGVQcm9maWxlVXBkYXRlQh'
-    'IKEF9wcm9maWxlT3ZlcnJpZGVCDgoMX3B1YkNhY2hlRGlyQhAKDl9mbHV0dGVyR2l0VXJsQg8K'
-    'DV9lbmdpbmVHaXRVcmxCEAoOX2RhcnRTZGtHaXRVcmxCEgoQX3JlbGVhc2VzSnNvblVybEIYCh'
-    'ZfZmx1dHRlclN0b3JhZ2VCYXNlVXJsQhAKDl9wdXJvQnVpbGRzVXJsQhIKEF9wdXJvQnVpbGRU'
-    'YXJnZXRCEAoOX3Nob3VsZEluc3RhbGxCEQoPX2xlZ2FjeVB1YkNhY2hl');
+    'Z2FjeVB1YkNhY2hliAEBEjEKEW9ob3NGbHV0dGVyR2l0VXJsGBQgASgJSBFSEW9ob3NGbHV0dG'
+    'VyR2l0VXJsiAEBEkEKGW9ob3NGbHV0dGVyU3RvcmFnZUJhc2VVcmwYFSABKAlIElIZb2hvc0Zs'
+    'dXR0ZXJTdG9yYWdlQmFzZVVybIgBAUIVChNfZGVmYXVsdEVudmlyb25tZW50QhIKEF9sYXN0VX'
+    'BkYXRlQ2hlY2tCGQoXX2xhc3RVcGRhdGVOb3RpZmljYXRpb25CIAoeX2xhc3RVcGRhdGVOb3Rp'
+    'ZmljYXRpb25Db21tYW5kQhQKEl9lbmFibGVVcGRhdGVDaGVja0IWChRfZW5hYmxlUHJvZmlsZV'
+    'VwZGF0ZUISChBfcHJvZmlsZU92ZXJyaWRlQg4KDF9wdWJDYWNoZURpckIQCg5fZmx1dHRlckdp'
+    'dFVybEIPCg1fZW5naW5lR2l0VXJsQhAKDl9kYXJ0U2RrR2l0VXJsQhIKEF9yZWxlYXNlc0pzb2'
+    '5VcmxCGAoWX2ZsdXR0ZXJTdG9yYWdlQmFzZVVybEIQCg5fcHVyb0J1aWxkc1VybEISChBfcHVy'
+    'b0J1aWxkVGFyZ2V0QhAKDl9zaG91bGRJbnN0YWxsQhEKD19sZWdhY3lQdWJDYWNoZUIUChJfb2'
+    'hvc0ZsdXR0ZXJHaXRVcmxCHAoaX29ob3NGbHV0dGVyU3RvcmFnZUJhc2VVcmw=');
 
 @$core.Deprecated('Use puroEnvPrefsModelDescriptor instead')
 const PuroEnvPrefsModel$json = {
@@ -526,6 +552,16 @@ const PuroEnvPrefsModel$json = {
       '10': 'patched',
       '17': true
     },
+    {'1': 'ohos', '3': 6, '4': 1, '5': 8, '9': 5, '10': 'ohos', '17': true},
+    {
+      '1': 'ohosCacheSource',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '9': 6,
+      '10': 'ohosCacheSource',
+      '17': true
+    },
   ],
   '8': [
     {'1': '_desiredVersion'},
@@ -533,6 +569,8 @@ const PuroEnvPrefsModel$json = {
     {'1': '_engineForkRemoteUrl'},
     {'1': '_precompileTool'},
     {'1': '_patched'},
+    {'1': '_ohos'},
+    {'1': '_ohosCacheSource'},
   ],
 };
 
@@ -542,9 +580,11 @@ final $typed_data.Uint8List puroEnvPrefsModelDescriptor = $convert.base64Decode(
     'JzaW9uTW9kZWxIAFIOZGVzaXJlZFZlcnNpb26IAQESKQoNZm9ya1JlbW90ZVVybBgCIAEoCUgB'
     'Ug1mb3JrUmVtb3RlVXJsiAEBEjUKE2VuZ2luZUZvcmtSZW1vdGVVcmwYAyABKAlIAlITZW5naW'
     '5lRm9ya1JlbW90ZVVybIgBARIrCg5wcmVjb21waWxlVG9vbBgEIAEoCEgDUg5wcmVjb21waWxl'
-    'VG9vbIgBARIdCgdwYXRjaGVkGAUgASgISARSB3BhdGNoZWSIAQFCEQoPX2Rlc2lyZWRWZXJzaW'
-    '9uQhAKDl9mb3JrUmVtb3RlVXJsQhYKFF9lbmdpbmVGb3JrUmVtb3RlVXJsQhEKD19wcmVjb21w'
-    'aWxlVG9vbEIKCghfcGF0Y2hlZA==');
+    'VG9vbIgBARIdCgdwYXRjaGVkGAUgASgISARSB3BhdGNoZWSIAQESFwoEb2hvcxgGIAEoCEgFUg'
+    'RvaG9ziAEBEi0KD29ob3NDYWNoZVNvdXJjZRgHIAEoCUgGUg9vaG9zQ2FjaGVTb3VyY2WIAQFC'
+    'EQoPX2Rlc2lyZWRWZXJzaW9uQhAKDl9mb3JrUmVtb3RlVXJsQhYKFF9lbmdpbmVGb3JrUmVtb3'
+    'RlVXJsQhEKD19wcmVjb21waWxlVG9vbEIKCghfcGF0Y2hlZEIHCgVfb2hvc0ISChBfb2hvc0Nh'
+    'Y2hlU291cmNl');
 
 @$core.Deprecated('Use puroDotfileModelDescriptor instead')
 const PuroDotfileModel$json = {

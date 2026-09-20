@@ -39,6 +39,9 @@ class FlutterCommand extends PuroCommand {
         );
         return (await runner.run(['upgrade', environment.name]))!;
       } else if (nonOptionArgs.first == 'channel' && nonOptionArgs.length > 1) {
+        if ((await environment.readPrefs(scope: scope)).ohos) {
+          throw CommandError('Use `puro upgrade ${environment.name} <ref>` to switch OHOS versions');
+        }
         runner.addMessage(
           'Using puro to switch flutter channel',
           type: CompletionType.info,

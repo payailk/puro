@@ -221,4 +221,75 @@ Before fetching an existing shared Git repository, Puro updates its `origin` to
 the configured URL. Cached SDK archives are reused; changing a mirror does not
 force a download. Existing environment remotes are not rewritten by `config`.
 For a fork, keep using `--fork` for its origin; `flutterGitUrl` selects the shared
-upstream repository. These settings do not enable a custom OpenHarmony Dart SDK.
+upstream repository. To install an OpenHarmony Dart SDK, create an OHOS environment
+as described below.
+
+## OpenHarmony Flutter environments
+
+Create an OHOS environment with an independent SDK cache:
+
+```sh
+puro create harmony --ohos
+# Or explicitly select a branch, tag, or commit from the OHOS repository:
+puro create harmony oh-3.41.9-release --ohos
+
+puro use harmony
+puro flutter --version
+puro flutter precache --ohos
+puro flutter build hap
+
+# Switch the project back to the official SDK:
+puro use stable
+```
+
+The default repository is `https://gitcode.com/CPF-Flutter/flutter_flutter.git`
+and the default ref is `oh-3.41.9-release`. OHOS environments require a custom
+name, such as `harmony`; official channel names and version-number environment
+names are reserved. `--ohos` cannot be combined with `--fork` or `--channel`.
+
+The environment remembers its OHOS type. Subsequent `use`, `flutter`, `dart`,
+and `upgrade` commands do not need `--ohos`. IDE SDK paths use the same environment
+and OHOS mirror settings. `puro ls` and its JSON output identify OHOS environments.
+
+```sh
+# Update the tracked OHOS branch, or retry an interrupted initialization:
+puro upgrade harmony
+
+# Switch to another OHOS branch, tag, or commit:
+puro upgrade harmony <ref>
+```
+
+Tags and commits stay pinned when `upgrade` has no explicit ref. Version resolution
+uses the OHOS Git repository, not the official Flutter release index. Local edits
+and divergent local commits are protected; `--force` explicitly discards them.
+Use separate environments to switch between official and OHOS SDKs.
+
+OHOS environments have separate mirror settings:
+
+```sh
+puro config set ohosFlutterGitUrl https://gitcode.com/CPF-Flutter/flutter_flutter.git
+puro config set ohosFlutterStorageBaseUrl https://flutter-ohos.obs.cn-south-1.myhuaweicloud.com
+puro config get ohosFlutterStorageBaseUrl
+puro config unset ohosFlutterStorageBaseUrl
+```
+
+The Git setting applies to newly created environments. Existing environments keep
+their recorded origin. The storage setting applies to subsequent OHOS commands,
+including IDE launches. For the 3.41.9 OHOS SDK, Puro passes it to the native SDK as
+`FLUTTER_OHOS_STORAGE_BASE_URL`, overriding any inherited value of that variable.
+The existing `flutterStorageBaseUrl` configuration (including its command-line
+and `FLUTTER_STORAGE_BASE_URL` overrides) supplies upstream engine metadata and
+common artifacts. These are distinct sources; pointing the upstream source at
+the OHOS server can produce 404 errors. For example, the upstream source can use
+`https://storage.flutter-io.cn` while the OHOS source uses the default above.
+
+Each OHOS environment owns its entire `flutter/bin/cache`, including Dart,
+engine artifacts, tool snapshots, and stamps. These files are not shared with
+official environments or other OHOS environments. The SDK's native scripts manage
+downloads and tool compilation; Puro's `precompileTool` preference does not apply
+to OHOS environments. A version or either storage-source change rebuilds only that
+environment's cache. `puro gc` does not remove this local cache; `puro rm harmony`
+removes it with the environment.
+
+Building HAPs also requires the OpenHarmony/DevEco toolchain described in the
+[OHOS SDK documentation](https://gitcode.com/CPF-Flutter/flutter_flutter/tree/oh-3.41.9-release).

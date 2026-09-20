@@ -11,6 +11,7 @@ import '../terminal.dart';
 import 'default.dart';
 import 'engine.dart';
 import 'flutter_tool.dart';
+import 'ohos.dart';
 
 Future<int> runFlutterCommand({
   required Scope scope,
@@ -27,6 +28,13 @@ Future<int> runFlutterCommand({
   final log = PuroLogger.of(scope);
   final start = clock.now();
   final environmentPrefs = await environment.readPrefs(scope: scope);
+  if (environmentPrefs.ohos) {
+    return runOhosCommand(
+      scope: scope, environment: environment, args: args,
+      stdin: stdin, onStdout: onStdout, onStderr: onStderr,
+      workingDirectory: workingDirectory, mode: mode,
+    );
+  }
   final toolInfo = await setUpFlutterTool(
     scope: scope,
     environment: environment,
@@ -107,6 +115,13 @@ Future<int> runDartCommand({
   final log = PuroLogger.of(scope);
   final start = clock.now();
   final environmentPrefs = await environment.readPrefs(scope: scope);
+  if (environmentPrefs.ohos) {
+    return runOhosCommand(
+      scope: scope, environment: environment, args: args, dart: true,
+      stdin: stdin, onStdout: onStdout, onStderr: onStderr,
+      workingDirectory: workingDirectory, mode: mode,
+    );
+  }
   await setUpFlutterTool(
     scope: scope,
     environment: environment,
@@ -164,20 +179,71 @@ Future<int> runDartCommand({
   }
 }
 
+Future<int> runOhosCommand({
+  required Scope scope,
+  required EnvConfig environment,
+  required List<String> args,
+  bool dart = false,
+  Stream<List<int>>? stdin,
+  void Function(List<int>)? onStdout,
+  void Function(List<int>)? onStderr,
+  String? workingDirectory,
+  ProcessStartMode mode = ProcessStartMode.normal,
+}) async {
+  final config = PuroConfig.of(scope);
+  if (config.project.parentPuroDotfile != null) {
+    await registerDotfile(scope: scope, dotfile: config.project.parentPuroDotfile!);
+  }
+  return withOhosCache(scope: scope, environment: environment, fn: () async {
+    final launcher = dart ? environment.flutter.dartScript : environment.flutter.flutterScript;
+    Terminal.of(scope).flushStatus();
+    final process = await startProcess(
+      scope, launcher.path, args,
+      workingDirectory: workingDirectory,
+      environment: ohosProcessEnvironment(config, environment),
+      mode: mode,
+      runInShell: Platform.isWindows,
+    );
+    final disposeExitSignals = _setupExitSignals(mode, process: process);
+    try {
+      if (mode == ProcessStartMode.normal) {
+        if (stdin != null) {
+          unawaited(process.stdin.addStream(stdin).then((_) => process.stdin.close()));
+        } else {
+          unawaited(process.stdin.close());
+        }
+        // Always drain both streams, even when a caller is uninterested in one.
+        final output = process.stdout.listen(onStdout ?? (_) {}).asFuture<void>();
+        final errors = process.stderr.listen(onStderr ?? (_) {}).asFuture<void>();
+        final exitCode = await process.exitCode;
+        await Future.wait([output, errors]);
+        return exitCode;
+      }
+      return await process.exitCode;
+    } finally {
+      await disposeExitSignals();
+    }
+  });
+}
+
 /// Capture SIGINT and SIGTERM signals. If we don't capture them, the parent
 /// process will exit, so the dart command won't have a chance to handle them.
 /// Some CLI apps might want to behave differently when they receive these
 /// signals.
-Future<void> Function() _setupExitSignals(ProcessStartMode mode) {
+Future<void> Function() _setupExitSignals(ProcessStartMode mode, {Process? process}) {
   StreamSubscription<ProcessSignal>? sigIntSub, sigTermSub;
 
-  if (mode == ProcessStartMode.inheritStdio) {
-    sigIntSub = ProcessSignal.sigint.watch().listen((_) {});
+  if (mode == ProcessStartMode.inheritStdio || process != null) {
+    sigIntSub = ProcessSignal.sigint.watch().listen((_) {
+      process?.kill(ProcessSignal.sigint);
+    });
 
     // SIGTERM is not supported on Windows. Attempting to register a SIGTERM
     // handler raises an exception.
     if (!Platform.isWindows) {
-      sigTermSub = ProcessSignal.sigterm.watch().listen((_) {});
+      sigTermSub = ProcessSignal.sigterm.watch().listen((_) {
+        process?.kill(ProcessSignal.sigterm);
+      });
     }
   }
 

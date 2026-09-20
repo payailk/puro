@@ -12,6 +12,7 @@ import '../logger.dart';
 import '../process.dart';
 import '../progress.dart';
 import '../provider.dart';
+import 'command.dart';
 import 'create.dart';
 import 'engine.dart';
 
@@ -86,6 +87,31 @@ Future<FlutterToolInfo> setUpFlutterTool({
   final log = PuroLogger.of(scope);
   final flutterConfig = environment.flutter;
   final flutterCache = flutterConfig.cache;
+  environmentPrefs ??= await environment.readPrefs(scope: scope);
+  if (environmentPrefs.ohos) {
+    final oldEngine = flutterCache.engineVersion;
+    final oldTool = flutterCache.flutterToolsStamp;
+    final errors = <int>[];
+    final exitCode = await runOhosCommand(
+      scope: scope, environment: environment, args: ['--version'],
+      onStderr: (bytes) {
+        errors.addAll(bytes);
+        log.v(utf8.decode(bytes, allowMalformed: true));
+      },
+    );
+    if (exitCode != 0) {
+      throw CommandError('OHOS Flutter initialization failed (exit $exitCode):\n'
+          '${utf8.decode(errors, allowMalformed: true)}\n'
+          'Retry with `puro upgrade ${environment.name}`.');
+    }
+    return FlutterToolInfo(
+      environment: environment,
+      commit: await git.getCurrentCommitHash(repository: environment.flutterDir),
+      snapshotFile: flutterCache.cacheDir.childFile('flutter_tools.snapshot'),
+      didUpdateEngine: oldEngine != flutterCache.engineVersion,
+      didUpdateTool: oldTool != flutterCache.flutterToolsStamp,
+    );
+  }
   final desiredEngineVersion = await getEngineVersion(
     scope: scope,
     flutterConfig: flutterConfig,

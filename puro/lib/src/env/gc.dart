@@ -31,6 +31,7 @@ Future<int> collectGarbage({
       continue;
     }
     final environment = config.getEnv(dir.basename);
+    if ((await environment.readPrefs(scope: scope)).ohos) continue;
     final engineVersion = environment.flutter.engineVersion;
     if (engineVersion != null) {
       usedCaches.add(engineVersion);

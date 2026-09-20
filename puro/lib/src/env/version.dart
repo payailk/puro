@@ -88,7 +88,7 @@ class FlutterVersion {
         return colorize(['$version', '$commitStr']);
       }
     } else {
-      return colorize([commitStr]);
+      return colorize([if (branch != null) branch!, commitStr]);
     }
   }
 
@@ -283,6 +283,16 @@ Future<FlutterVersion?> getEnvironmentFlutterVersion({
   );
   if (commit == null) {
     return null;
+  }
+
+  final prefs = await environment.readPrefs(scope: scope);
+  if (prefs.ohos) {
+    return FlutterVersion(
+      commit: commit,
+      branch: await git.getBranch(repository: flutterConfig.sdkDir),
+      tag: prefs.hasDesiredVersion() && prefs.desiredVersion.commit == commit && prefs.desiredVersion.hasTag()
+          ? prefs.desiredVersion.tag : null,
+    );
   }
 
   Version? version;

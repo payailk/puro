@@ -19,14 +19,16 @@ class EnvironmentInfoResult {
     this.version,
     this.dartVersion,
     this.projects,
-    this.showDartVersion,
-  );
+    this.showDartVersion, {
+    this.ohos = false,
+  });
 
   final EnvConfig environment;
   final FlutterVersion? version;
   final String? dartVersion;
   final List<Directory> projects;
   final bool showDartVersion;
+  final bool ohos;
 
   EnvironmentInfoModel toModel() {
     return EnvironmentInfoModel(
@@ -34,6 +36,7 @@ class EnvironmentInfoResult {
       path: environment.envDir.path,
       version: version?.toModel(),
       projects: projects.map((e) => e.path).toList(),
+      ohos: ohos ? true : null,
     );
   }
 }
@@ -106,7 +109,7 @@ class ListEnvironmentResult extends CommandResult {
         for (var i = 0; i < lines.length; i++) ...[
           padRightColored(lines[i][0], linePadding) +
               format.color(
-                ' (${[if (results[i].environment.exists) results[i].version ?? 'unknown' else 'not installed', if (results[i].dartVersion != null && results[i].showDartVersion) 'Dart ${results[i].dartVersion}'].join(' / ')})',
+                ' (${[if (results[i].ohos) 'ohos', if (results[i].environment.exists) results[i].version ?? 'unknown' else 'not installed', if (results[i].dartVersion != null && results[i].showDartVersion) 'Dart ${results[i].dartVersion}'].join(' / ')})',
                 foregroundColor: Ansi8BitColor.grey,
               ),
           ...lines[i].skip(1),
@@ -195,6 +198,7 @@ Future<ListEnvironmentResult> listEnvironments({
           dartVersion,
           projects,
           showDartVersion,
+          ohos: (await environment.readPrefs(scope: scope)).ohos,
         ),
       );
     }

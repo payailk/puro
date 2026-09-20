@@ -3,12 +3,18 @@ import '../command_result.dart';
 import '../config.dart';
 import '../env/create.dart';
 import '../env/default.dart';
+import '../env/ohos.dart';
 import '../env/releases.dart';
 import '../env/version.dart';
 import '../install/bin.dart';
 
 class EnvCreateCommand extends PuroCommand {
   EnvCreateCommand() {
+    argParser.addFlag(
+      'ohos',
+      help: 'Creates an OpenHarmony Flutter environment with an independent SDK cache',
+      negatable: false,
+    );
     argParser.addOption(
       'channel',
       help:
@@ -40,6 +46,21 @@ class EnvCreateCommand extends PuroCommand {
     final version = args.length > 1 ? args[1] : null;
     final envName = args.first.toLowerCase();
     ensureValidEnvName(envName);
+
+    if (argResults!['ohos'] as bool) {
+      if (fork != null || channel != null) {
+        throw CommandError('--ohos cannot be combined with --fork or --channel');
+      }
+      if (isPseudoEnvName(envName) || isValidVersion(envName)) {
+        throw CommandError('OHOS environments require a custom name, such as `harmony`');
+      }
+      await ensurePuroInstalled(scope: scope);
+      return createOhosEnvironment(
+        scope: scope,
+        envName: envName,
+        ref: version ?? defaultOhosFlutterRef,
+      );
+    }
 
     await ensurePuroInstalled(scope: scope);
 

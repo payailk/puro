@@ -18,6 +18,10 @@ import 'logger.dart';
 import 'provider.dart';
 import 'version.dart';
 
+const defaultOhosFlutterGitUrl = 'https://gitcode.com/CPF-Flutter/flutter_flutter.git';
+const defaultOhosFlutterStorageBaseUrl = 'https://flutter-ohos.obs.cn-south-1.myhuaweicloud.com';
+const defaultOhosFlutterRef = 'oh-3.41.9-release';
+
 Directory? findProjectDir(Directory directory, String fileName) {
   while (directory.existsSync()) {
     if (directory.fileSystem
@@ -55,6 +59,8 @@ class PuroConfig {
     required this.enableShims,
     required this.shouldInstall,
     required this.shouldSkipCacheSync,
+    this.ohosFlutterGitUrl = defaultOhosFlutterGitUrl,
+    this.ohosFlutterStorageBaseUrl = defaultOhosFlutterStorageBaseUrl,
   }) : puroRoot = puroRoot.absolute;
 
   static Future<PuroConfig> fromCommandLine({
@@ -212,6 +218,10 @@ class PuroConfig {
             '$flutterStorageBaseUrl/flutter_infra_release/releases/releases_${Platform.operatingSystem}.json',
       ),
       flutterStorageBaseUrl: Uri.parse(flutterStorageBaseUrl),
+      ohosFlutterGitUrl: globalPrefs.hasOhosFlutterGitUrl()
+          ? globalPrefs.ohosFlutterGitUrl : defaultOhosFlutterGitUrl,
+      ohosFlutterStorageBaseUrl: globalPrefs.hasOhosFlutterStorageBaseUrl()
+          ? globalPrefs.ohosFlutterStorageBaseUrl : defaultOhosFlutterStorageBaseUrl,
       environmentOverride: environmentOverride,
       puroBuildsUrl: Uri.parse(
         (globalPrefs.hasPuroBuildsUrl() ? globalPrefs.puroBuildsUrl : null) ??
@@ -285,6 +295,8 @@ class PuroConfig {
   final String dartSdkGitUrl;
   final Uri releasesJsonUrl;
   final Uri flutterStorageBaseUrl;
+  final String ohosFlutterGitUrl;
+  final String ohosFlutterStorageBaseUrl;
   final String? environmentOverride;
   final Uri puroBuildsUrl;
   final PuroBuildTarget buildTarget;
@@ -297,6 +309,8 @@ class PuroConfig {
   late final Directory binDir = puroRoot.childDirectory('bin');
   late final Directory sharedDir = puroRoot.childDirectory('shared');
   late final Directory sharedFlutterDir = sharedDir.childDirectory('flutter');
+  late final Directory sharedOhosFlutterDir = sharedDir.childDirectory('flutter-ohos');
+  late final File sharedOhosFlutterLock = sharedDir.childFile('flutter-ohos.lock');
   late final Directory sharedEngineDir = sharedDir.childDirectory('engine');
   late final Directory sharedDartSdkDir = sharedDir.childDirectory('dart-sdk');
   late final Directory sharedDartReleaseDir = sharedDir.childDirectory(

@@ -25,6 +25,7 @@ message EnvironmentInfoModel {
   optional FlutterVersionModel version = 3;
   optional string dartVersion = 5;
   repeated string projects = 4;
+  optional bool ohos = 6;
 }
 
 message EnvironmentListModel {
@@ -73,6 +74,8 @@ message PuroGlobalPrefsModel {
   optional string puroBuildTarget = 16;
   optional bool shouldInstall = 18;
   optional bool legacyPubCache = 19;
+  optional string ohosFlutterGitUrl = 20;
+  optional string ohosFlutterStorageBaseUrl = 21;
 }
 
 message PuroEnvPrefsModel {
@@ -81,6 +84,8 @@ message PuroEnvPrefsModel {
   optional string engineForkRemoteUrl = 3;
   optional bool precompileTool = 4;
   optional bool patched = 5;
+  optional bool ohos = 6;
+  optional string ohosCacheSource = 7;
 }
 
 message PuroDotfileModel {
