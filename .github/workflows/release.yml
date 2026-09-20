@@ -1,0 +1,110 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-x64
+            runner: ubuntu-22.04
+            asset: puro-linux-x64
+            arch: x86_64
+          - target: darwin-x64
+            runner: macos-15-intel
+            asset: puro-darwin-x64
+            arch: x86_64
+          - target: darwin-arm64
+            runner: macos-15
+            asset: puro-darwin-arm64
+            arch: arm64
+          - target: windows-x64
+            runner: windows-2022
+            asset: puro-windows-x64.exe
+            arch: x86_64
+    defaults:
+      run:
+        shell: bash
+        working-directory: puro
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '3.11.5'
+      - name: Validate tag and architecture
+        env:
+          EXPECTED_ARCH: ${{ matrix.arch }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid release tag: $GITHUB_REF_NAME" >&2
+            exit 1
+          fi
+          test "$(uname -m)" = "$EXPECTED_ARCH"
+          echo "PURO_RELEASE_VERSION=$version" >> "$GITHUB_ENV"
+      - run: dart pub get
+      - name: Analyze and test
+        if: matrix.target == 'linux-x64'
+        run: |
+          dart analyze
+          dart test
+          bash -n ../installer/install.sh
+          python3 ../installer/test_install.py
+      - name: Compile and verify version
+        env:
+          ASSET: ${{ matrix.asset }}
+          PURO_ROOT: ${{ runner.temp }}/puro-release-smoke
+        run: |
+          mkdir -p ../dist
+          dart compile exe bin/puro.dart -o "../dist/$ASSET" "--define=puro_version=$PURO_RELEASE_VERSION"
+          actual_version="$("../dist/$ASSET" --no-install --no-update-check version --plain)"
+          test "$actual_version" = "$PURO_RELEASE_VERSION"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: dist/${{ matrix.asset }}
+          if-no-files-found: error
+
+  publish:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Generate checksums
+        working-directory: dist
+        run: |
+          sha256sum puro-darwin-arm64 puro-darwin-x64 puro-linux-x64 puro-windows-x64.exe > SHA256SUMS
+          cp ../installer/install.sh .
+      - name: Publish all assets together
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # A draft keeps incomplete uploads out of the latest download URL.
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            test "$(gh release view "$GITHUB_REF_NAME" --json isDraft --jq .isDraft)" = true
+          else
+            gh release create "$GITHUB_REF_NAME" --verify-tag --draft --title "Puro $GITHUB_REF_NAME" --generate-notes
+          fi
+          gh release upload "$GITHUB_REF_NAME" dist/* --clobber
+          gh release edit "$GITHUB_REF_NAME" --draft=false --latest

@@ -19,6 +19,10 @@ Puro itself) and 50-95% faster upgrades.
 
 ### Installation
 
+For this fork's GitHub Release installer and publishing instructions, see the
+[fork installation guide](https://github.com/payailk/puro/blob/master/installer/README.md).
+It includes the one-line installer for the version with mirror configuration and OHOS support.
+
 Puro is distributed as a precompiled executable (you do not need Dart installed), see the quick installation
 instructions at [https://puro.dev/](https://puro.dev/)
 

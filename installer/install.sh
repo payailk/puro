@@ -1,67 +1,79 @@
 #!/usr/bin/env bash
 
-if [ -z "${PURO_ROOT-}" ]; then
-  PURO_ROOT=${HOME}/.puro
-fi
+# Run in a subshell so this also works when sourced without changing the caller.
+puro_install() (
+  set -eu
 
-if [ -z "${PURO_VERSION-}" ]; then
-  PURO_VERSION="master"
-fi
+  PURO_ROOT="${PURO_ROOT:-$HOME/.puro}"
+  export PURO_ROOT
+  PURO_VERSION="${PURO_VERSION:-latest}"
+  PURO_REPOSITORY="${PURO_REPOSITORY:-payailk/puro}"
 
-PURO_BIN="$PURO_ROOT/bin"
-PURO_EXE="$PURO_BIN/puro.new"
-
-is_sourced() {
-  if [ -n "$ZSH_VERSION" ]; then
-    case $ZSH_EVAL_CONTEXT in *:file:*) return 0;; esac
-  else  # Add additional POSIX-compatible shell names here, if needed.
-    case ${0##*/} in dash|-dash|bash|-bash|ksh|-ksh|sh|-sh) return 0;; esac
+  if [[ ! "$PURO_REPOSITORY" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
+    >&2 echo 'Error: PURO_REPOSITORY must be an owner/repository name.'
+    exit 1
   fi
-  return 1  # NOT sourced.
-}
 
-if is_sourced; then
-    # shellcheck disable=SC2209
-    ret=return
-else
-    # shellcheck disable=SC2209
-    # shellcheck disable=SC2034
-    ret=exit
-fi
-
-OS="$(uname -s)"
-ARCH="$(uname -m)"
-if [ "$OS" = 'Darwin' ]; then
-  if [ "$ARCH" = 'arm64' ]; then
-    DOWNLOAD_URL="https://puro.dev/builds/${PURO_VERSION}/darwin-arm64/puro"
-  else
-    DOWNLOAD_URL="https://puro.dev/builds/${PURO_VERSION}/darwin-x64/puro"
-  fi
-elif [ "$OS" = 'Linux' ]; then
-  DOWNLOAD_URL="https://puro.dev/builds/${PURO_VERSION}/linux-x64/puro"
-else
-  >&2 echo "Error: Unknown OS: $OS"
-  $ret 1
-fi
-
-command -v curl > /dev/null 2>&1 || {
-  >&2 echo 'Error: could not find curl command'
-  case "$OS" in
-    Darwin)
-      >&2 echo 'Consider running "brew install curl".'
-      ;;
-    Linux)
-      >&2 echo 'Consider running "sudo apt-get install curl".'
+  case "$(uname -s)/$(uname -m)" in
+    Darwin/arm64) target=darwin-arm64 ;;
+    Darwin/x86_64) target=darwin-x64 ;;
+    Linux/x86_64) target=linux-x64 ;;
+    *)
+      >&2 echo 'Error: Supported platforms are macOS arm64/x64 and Linux x64.'
+      exit 1
       ;;
   esac
-  $ret 1
-}
 
-mkdir -p "$PURO_BIN"
-curl -f --retry 3 --output "$PURO_EXE" "$DOWNLOAD_URL" || {
-  >&2 echo "Error downloading $DOWNLOAD_URL"
-  $ret $?
-}
-chmod +x "$PURO_EXE" || $ret $?
+  if ! command -v curl > /dev/null 2>&1; then
+    >&2 echo 'Error: Install curl before running this installer.'
+    exit 1
+  fi
+  if command -v sha256sum > /dev/null 2>&1; then
+    checksum_command=(sha256sum)
+  elif command -v shasum > /dev/null 2>&1; then
+    checksum_command=(shasum -a 256)
+  else
+    >&2 echo 'Error: Install sha256sum or shasum before running this installer.'
+    exit 1
+  fi
 
-"$PURO_EXE" install-puro --promote
+  release_url="https://github.com/$PURO_REPOSITORY/releases"
+  if [ "$PURO_VERSION" = latest ]; then
+    release_url="$release_url/latest/download"
+  else
+    version="${PURO_VERSION#v}"
+    if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+      >&2 echo 'Error: PURO_VERSION must be latest or a version such as 1.5.0-ohos.1 (optional v prefix).'
+      exit 1
+    fi
+    release_url="$release_url/download/v$version"
+  fi
+
+  mkdir -p "$PURO_ROOT/bin"
+  download_dir="$(mktemp -d "$PURO_ROOT/bin/.puro-install.XXXXXX")"
+  trap 'rm -rf "$download_dir"' EXIT
+  asset="puro-$target"
+
+  echo "Downloading $asset ($PURO_VERSION) from $PURO_REPOSITORY..."
+  if ! curl -fL --retry 3 --output "$download_dir/$asset" "$release_url/$asset"; then
+    >&2 echo 'Error: Could not download Puro. Check that the GitHub Release has been published.'
+    exit 1
+  fi
+  curl -fL --retry 3 --output "$download_dir/SHA256SUMS" "$release_url/SHA256SUMS"
+
+  # Check only the selected platform, not the other files in the release.
+  checksum="$(awk -v asset="$asset" '$2 == asset { print $1 }' "$download_dir/SHA256SUMS")"
+  if [[ ! "$checksum" =~ ^[0-9a-fA-F]{64}$ ]]; then
+    >&2 echo "Error: Missing or invalid SHA-256 checksum for $asset."
+    exit 1
+  fi
+  (
+    cd "$download_dir"
+    printf '%s  %s\n' "$checksum" "$asset" | "${checksum_command[@]}" -c -
+  )
+
+  chmod +x "$download_dir/$asset"
+  "$download_dir/$asset" install-puro --promote
+)
+
+puro_install
