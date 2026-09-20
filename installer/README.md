@@ -14,8 +14,8 @@ curl -fsSL https://github.com/payailk/puro/releases/latest/download/install.sh |
 Install a specific release (the script and binary are both pinned):
 
 ```bash
-curl -fsSL https://github.com/payailk/puro/releases/download/v1.5.0-ohos.2/install.sh \
-  | PURO_VERSION="1.5.0-ohos.2" bash
+curl -fsSL https://github.com/payailk/puro/releases/download/v1.5.0-ohos.3/install.sh \
+  | PURO_VERSION="1.5.0-ohos.3" bash
 ```
 
 The installer supports macOS arm64 and macOS x64. Linux binaries are not published.
@@ -63,12 +63,12 @@ Then create and push a new version tag on that commit:
 
 ```bash
 git push origin master
-git tag v1.5.0-ohos.2
-git push origin v1.5.0-ohos.2
+git tag v1.5.0-ohos.3
+git push origin v1.5.0-ohos.3
 ```
 
 Tags must use `v` followed by a semantic version. Each subsequent release needs
-a new tag, for example `v1.5.0-ohos.3`. The `Release` workflow:
+a new tag, for example `v1.5.0-ohos.4`. The `Release` workflow:
 
 1. Resolves dependencies with Dart 3.11.5 and runs analysis, Dart tests, and
    installer tests on macOS x64, without formatting source files.
@@ -80,7 +80,7 @@ a new tag, for example `v1.5.0-ohos.3`. The `Release` workflow:
    release. A failed draft upload can be retried. Already published releases are
    not overwritten.
 
-The `-ohos.2` suffix identifies this fork's version; the workflow publishes it as
+The `-ohos.3` suffix identifies this fork's version; the workflow publishes it as
 a regular GitHub Release so that `latest/download` works. Every successfully
 published tag becomes the latest release, so publish tags in the intended order.
 The installation commands become usable only after the workflow succeeds.

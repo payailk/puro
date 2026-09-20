@@ -214,7 +214,7 @@ exit 23
       expect(environment.flutter.flutterScript.readAsStringSync(), original);
       final windows = environment.flutterDir.childFile('bin/dart.bat').readAsStringSync();
       expect(windows, contains('GOTO puro_ohos_native'));
-      expect(windows, endsWith('@echo native dart\n'));
+      expect(windows.replaceAll('\r\n', '\n'), endsWith('@echo native dart\n'));
     });
 
     test('changing OHOS source rebuilds local cache without touching symlink targets', () async {
