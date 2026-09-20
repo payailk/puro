@@ -3,7 +3,7 @@
 This fork installs precompiled binaries from `payailk/puro` GitHub Releases.
 No Dart SDK is needed on the user's machine.
 
-## macOS and Linux
+## macOS
 
 After the first release has been published, install the latest release:
 
@@ -14,11 +14,12 @@ curl -fsSL https://github.com/payailk/puro/releases/latest/download/install.sh |
 Install a specific release (the script and binary are both pinned):
 
 ```bash
-curl -fsSL https://github.com/payailk/puro/releases/download/v1.5.0-ohos.1/install.sh \
-  | PURO_VERSION="1.5.0-ohos.1" bash
+curl -fsSL https://github.com/payailk/puro/releases/download/v1.5.0-ohos.2/install.sh \
+  | PURO_VERSION="1.5.0-ohos.2" bash
 ```
 
-The installer supports macOS arm64, macOS x64, and Linux x64. It follows GitHub
+The installer supports macOS arm64 and macOS x64. Linux binaries are not published.
+It follows GitHub
 download redirects, verifies the selected binary against the release's
 `SHA256SUMS`, and then runs `install-puro --promote`. Download or checksum failures
 leave the existing executable untouched. Existing environments and configuration
@@ -62,24 +63,24 @@ Then create and push a new version tag on that commit:
 
 ```bash
 git push origin master
-git tag v1.5.0-ohos.1
-git push origin v1.5.0-ohos.1
+git tag v1.5.0-ohos.2
+git push origin v1.5.0-ohos.2
 ```
 
 Tags must use `v` followed by a semantic version. Each subsequent release needs
-a new tag, for example `v1.5.0-ohos.2`. The `Release` workflow:
+a new tag, for example `v1.5.0-ohos.3`. The `Release` workflow:
 
 1. Resolves dependencies with Dart 3.11.5 and runs analysis, Dart tests, and
-   installer tests on Linux, without formatting source files.
-2. Builds native executables on Linux x64, macOS x64, macOS arm64, and Windows x64.
+   installer tests on macOS x64, without formatting source files.
+2. Builds native executables on macOS x64, macOS arm64, and Windows x64.
 3. Embeds the tag's version without `v` and checks the compiled program's version
    on each platform.
-4. Collects the four executables, generates `SHA256SUMS`, and includes `install.sh`.
+4. Collects the three executables, generates `SHA256SUMS`, and includes `install.sh`.
 5. Uploads all assets to a draft GitHub Release, then publishes it as the latest
    release. A failed draft upload can be retried. Already published releases are
    not overwritten.
 
-The `-ohos.1` suffix identifies this fork's version; the workflow publishes it as
+The `-ohos.2` suffix identifies this fork's version; the workflow publishes it as
 a regular GitHub Release so that `latest/download` works. Every successfully
 published tag becomes the latest release, so publish tags in the intended order.
 The installation commands become usable only after the workflow succeeds.

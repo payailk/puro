@@ -20,10 +20,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - target: linux-x64
-            runner: ubuntu-22.04
-            asset: puro-linux-x64
-            arch: x86_64
           - target: darwin-x64
             runner: macos-15-intel
             asset: puro-darwin-x64
@@ -58,12 +54,20 @@ jobs:
           echo "PURO_RELEASE_VERSION=$version" >> "$GITHUB_ENV"
       - run: dart pub get
       - name: Analyze and test
-        if: matrix.target == 'linux-x64'
+        if: matrix.target == 'darwin-x64'
         run: |
           dart analyze
-          dart test
+          dart test --reporter expanded 2>&1 | tee "$RUNNER_TEMP/puro-tests.log"
           bash -n ../installer/install.sh
           python3 ../installer/test_install.py
+      - name: Summarize test failure
+        if: failure() && matrix.target == 'darwin-x64'
+        run: |
+          if [ -f "$RUNNER_TEMP/puro-tests.log" ]; then
+            printf '### Dart test output\n\n```text\n' >> "$GITHUB_STEP_SUMMARY"
+            cat "$RUNNER_TEMP/puro-tests.log" >> "$GITHUB_STEP_SUMMARY"
+            printf '\n```\n' >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Compile and verify version
         env:
           ASSET: ${{ matrix.asset }}
@@ -94,7 +98,7 @@ jobs:
       - name: Generate checksums
         working-directory: dist
         run: |
-          sha256sum puro-darwin-arm64 puro-darwin-x64 puro-linux-x64 puro-windows-x64.exe > SHA256SUMS
+          sha256sum puro-darwin-arm64 puro-darwin-x64 puro-windows-x64.exe > SHA256SUMS
           cp ../installer/install.sh .
       - name: Publish all assets together
         env:

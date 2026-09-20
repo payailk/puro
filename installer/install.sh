@@ -17,9 +17,8 @@ puro_install() (
   case "$(uname -s)/$(uname -m)" in
     Darwin/arm64) target=darwin-arm64 ;;
     Darwin/x86_64) target=darwin-x64 ;;
-    Linux/x86_64) target=linux-x64 ;;
     *)
-      >&2 echo 'Error: Supported platforms are macOS arm64/x64 and Linux x64.'
+      >&2 echo 'Error: This installer supports macOS arm64/x64. Linux binaries are not published.'
       exit 1
       ;;
   esac

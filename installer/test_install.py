@@ -11,7 +11,7 @@ import unittest
 
 
 INSTALLER = Path(__file__).with_name("install.sh")
-ASSETS = ("puro-darwin-arm64", "puro-darwin-x64", "puro-linux-x64")
+ASSETS = ("puro-darwin-arm64", "puro-darwin-x64")
 
 
 class InstallerTest(unittest.TestCase):
@@ -92,8 +92,8 @@ exit "${TEST_INSTALL_EXIT:-0}"
     def test_platforms_and_versions(self):
         for os_name, arch, asset, version, release_path in (
             ("Darwin", "arm64", "puro-darwin-arm64", "latest", "latest/download"),
-            ("Darwin", "x86_64", "puro-darwin-x64", "1.5.0-ohos.1", "download/v1.5.0-ohos.1"),
-            ("Linux", "x86_64", "puro-linux-x64", "v1.5.0-ohos.1", "download/v1.5.0-ohos.1"),
+            ("Darwin", "x86_64", "puro-darwin-x64", "1.5.0-ohos.2", "download/v1.5.0-ohos.2"),
+            ("Darwin", "arm64", "puro-darwin-arm64", "v1.5.0-ohos.2", "download/v1.5.0-ohos.2"),
         ):
             with self.subTest(os=os_name, arch=arch, version=version):
                 self.env.update(TEST_OS=os_name, TEST_ARCH=arch, PURO_VERSION=version)
@@ -109,9 +109,11 @@ exit "${TEST_INSTALL_EXIT:-0}"
         self.assertIn("https://github.com/example/puro/releases/latest/download/puro-darwin-arm64", self.urls.read_text())
 
     def test_unsupported_architecture(self):
-        self.env.update(TEST_OS="Linux", TEST_ARCH="aarch64")
-        self.assert_not_installed(self.run_installer())
-        self.assertFalse(self.urls.exists())
+        for arch in ("x86_64", "aarch64"):
+            with self.subTest(arch=arch):
+                self.env.update(TEST_OS="Linux", TEST_ARCH=arch)
+                self.assert_not_installed(self.run_installer())
+                self.assertFalse(self.urls.exists())
 
     def test_invalid_version(self):
         self.env["PURO_VERSION"] = "../../master"
