@@ -84,11 +84,9 @@ jobs:
           if-no-files-found: error
 
   publish:
-    name: Publish GitHub Release
+    name: Publish Gitee Release
     needs: build
     runs-on: ubuntu-22.04
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -100,15 +98,11 @@ jobs:
         run: |
           sha256sum puro-darwin-arm64 puro-darwin-x64 puro-windows-x64.exe > SHA256SUMS
           cp ../installer/install.sh .
-      - name: Publish all assets together
+      - name: Publish all assets to Gitee
         env:
-          GH_TOKEN: ${{ github.token }}
+          GITEE_ACCESS_TOKEN: ${{ secrets.GITEE_ACCESS_TOKEN }}
         run: |
-          # A draft keeps incomplete uploads out of the latest download URL.
-          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
-            test "$(gh release view "$GITHUB_REF_NAME" --json isDraft --jq .isDraft)" = true
-          else
-            gh release create "$GITHUB_REF_NAME" --verify-tag --draft --title "Puro $GITHUB_REF_NAME" --generate-notes
-          fi
-          gh release upload "$GITHUB_REF_NAME" dist/* --clobber
-          gh release edit "$GITHUB_REF_NAME" --draft=false --latest
+          python3 installer/publish_gitee.py \
+            --repository robinzzz1/puro \
+            --version "${GITHUB_REF_NAME#v}" \
+            --directory dist

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:file/file.dart';
+import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as path;
 import 'package:process/process.dart';
 import 'package:protobuf/protobuf.dart';
@@ -225,7 +226,7 @@ class PuroConfig {
       environmentOverride: environmentOverride,
       puroBuildsUrl: Uri.parse(
         (globalPrefs.hasPuroBuildsUrl() ? globalPrefs.puroBuildsUrl : null) ??
-            'https://puro.dev/builds',
+            'https://gitee.com/api/v5/repos/robinzzz1/puro/releases',
       ),
       buildTarget: globalPrefs.hasPuroBuildTarget()
           ? PuroBuildTarget.fromString(globalPrefs.puroBuildTarget)
@@ -344,7 +345,9 @@ class PuroConfig {
   late final File defaultEnvNameFile = puroRoot.childFile('default_env');
   late final Link defaultEnvLink = envsDir.childLink('default');
   late final Uri puroLatestVersionUrl = puroBuildsUrl.append(path: 'latest');
-  late final File puroLatestVersionFile = puroRoot.childFile('latest_version');
+  late final File puroLatestVersionFile = puroRoot.childFile(
+    'latest_version_${buildTarget.name}_${sha256.convert(utf8.encode(puroBuildsUrl.toString())).toString().substring(0, 16)}',
+  );
   late final Directory depotToolsDir = puroRoot.childDirectory('depot_tools');
 
   late List<String> desiredEnvPaths = [

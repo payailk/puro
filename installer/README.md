@@ -1,94 +1,145 @@
 # Installing and releasing this fork
 
-This fork installs precompiled binaries from `payailk/puro` GitHub Releases.
-No Dart SDK is needed on the user's machine.
+This fork installs and updates precompiled binaries from
+[`robinzzz1/puro` Gitee Releases](https://gitee.com/robinzzz1/puro/releases).
+The user's machine can start with the executable alone. Flutter SDK mirrors are
+configured separately with the existing `puro config` commands.
 
 ## macOS
 
-After the first release has been published, install the latest release:
+Use the versioned installer to install the latest published release:
 
 ```bash
-curl -fsSL https://github.com/payailk/puro/releases/latest/download/install.sh | bash
+curl -fsSL https://gitee.com/robinzzz1/puro/releases/download/v1.5.0-ohos.4/install.sh | bash
 ```
 
-Install a specific release (the script and binary are both pinned):
+Pin both the installer and executable to this release:
 
 ```bash
-curl -fsSL https://github.com/payailk/puro/releases/download/v1.5.0-ohos.3/install.sh \
-  | PURO_VERSION="1.5.0-ohos.3" bash
+curl -fsSL https://gitee.com/robinzzz1/puro/releases/download/v1.5.0-ohos.4/install.sh \
+  | PURO_VERSION="1.5.0-ohos.4" bash
 ```
 
-The installer supports macOS arm64 and macOS x64. Linux binaries are not published.
-It follows GitHub
-download redirects, verifies the selected binary against the release's
-`SHA256SUMS`, and then runs `install-puro --promote`. Download or checksum failures
-leave the existing executable untouched. Existing environments and configuration
-are retained; environment launchers are refreshed by `install-puro`.
+The installer supports macOS arm64 and x64 when the selected release contains
+that platform's asset. It reads the Gitee Releases API, follows asset redirects,
+verifies the binary against `SHA256SUMS`, and checks the executable's embedded
+version before running `install-puro --promote`. Download and verification
+failures leave the existing executable untouched. Existing SDK environments and
+SDK mirror settings are retained.
 
 `PURO_VERSION` defaults to `latest` and accepts versions with or without `v`.
-`PURO_ROOT` defaults to `~/.puro`. Other forks can set `PURO_REPOSITORY=owner/repo`
-on the `bash` side of the pipe and change the script URL to their own repository.
+`PURO_ROOT` defaults to `~/.puro`. Set `PURO_REPOSITORY=owner/repo` for another
+Gitee fork, or `PURO_RELEASES_URL` for a custom Gitee Releases API endpoint.
+The installer saves that endpoint as `puroBuildsUrl` for subsequent updates.
 
-Reopen the terminal if the installer updates PATH, then verify and use OHOS:
+Reopen the terminal if PATH was updated, then verify:
 
 ```bash
 puro version
-puro create harmony --ohos
-puro use -g harmony
+puro --json config list
 ```
 
-To select the environment for one Flutter project, run `puro use harmony` in that
-project instead of setting the global default.
+The existing SDK selection commands remain available:
+
+```bash
+puro create harmony --ohos
+puro use harmony
+```
+
+Run `puro use harmony` in the project directory for project-local selection,
+or `puro use -g harmony` for the global selection.
 
 ## Windows
 
-Download `puro-windows-x64.exe` from the desired GitHub Release. In PowerShell,
-run the following from the download directory:
+Select a release containing `puro-windows-x64.exe` and `SHA256SUMS` on the
+[Gitee Releases page](https://gitee.com/robinzzz1/puro/releases). Download both,
+then run these commands from their directory in PowerShell:
 
 ```powershell
+$entry = Select-String -Path .\SHA256SUMS -Pattern '^[0-9a-fA-F]{64}\s+\*?puro-windows-x64\.exe$'
+if (@($entry).Count -ne 1) { throw 'Expected one Windows checksum' }
+$expected = ($entry.Line -split '\s+')[0]
+$actual = (Get-FileHash .\puro-windows-x64.exe -Algorithm SHA256).Hash
+if ($actual -ne $expected) { throw 'Puro checksum mismatch' }
+.\puro-windows-x64.exe --no-install --no-update-check version --plain
 .\puro-windows-x64.exe install-puro --promote
+puro --json config set puroBuildsUrl https://gitee.com/api/v5/repos/robinzzz1/puro/releases
 ```
 
-The Bash installer does not support Windows. The Windows build is a standalone
-executable, not a signed installer.
+The Windows build is a standalone executable. Available platforms are listed in
+each release body. A release containing only a macOS arm64 binary serves that
+platform; Windows and macOS x64 use their corresponding native build outputs.
 
-## Publishing a release
+## Updating Puro
 
-The repository must be accessible to users downloading without authentication,
-and GitHub Actions must be enabled. The workflow uses the built-in `GITHUB_TOKEN`
-with `contents: write` for publishing; no personal access token is required.
+```bash
+puro upgrade-puro
+puro upgrade-puro 1.5.0-ohos.4
+```
 
-Commit and push the workflow, installer, tests, and documentation to `master`.
-Then create and push a new version tag on that commit:
+Update discovery, notifications, and explicit upgrades share the same Gitee
+release resolver. Automatic discovery selects the highest stable release that
+contains the current platform binary and its checksum. The `master` argument
+selects an explicitly published `master` development release. The existing
+`update-puro` alias and pub-installed command path remain available.
+
+The `puroBuildsUrl` preference now means a Gitee Releases API endpoint. Existing
+custom directory-style update sources should be changed to that API format:
+
+```bash
+puro --json config set puroBuildsUrl https://gitee.com/api/v5/repos/robinzzz1/puro/releases
+```
+
+The seven existing Flutter, Dart, engine, and OHOS mirror keys keep their SDK
+responsibilities. This preference controls Puro's own release source.
+
+## Building and publishing
+
+Use Dart 3.11.5 and build each binary on its corresponding operating system and
+architecture. The local macOS arm64 build used for this version is:
+
+```bash
+cd puro
+puro -e harmony dart pub get
+mkdir -p ../dist
+puro -e harmony dart compile exe bin/puro.dart \
+  -o ../dist/puro-darwin-arm64 --define=puro_version=1.5.0-ohos.4
+cd ../dist
+shasum -a 256 puro-darwin-arm64 > SHA256SUMS
+cp ../installer/install.sh .
+cd ..
+```
+
+For a combined release, collect `puro-darwin-arm64`, `puro-darwin-x64`, and
+`puro-windows-x64.exe` in `dist/`, then generate a checksum entry for each binary.
+The version is embedded explicitly through `--define=puro_version`.
+
+Commit the source, push it, and create the matching Gitee tag before publishing:
 
 ```bash
 git push origin master
-git tag v1.5.0-ohos.3
-git push origin v1.5.0-ohos.3
+git tag v1.5.0-ohos.4
+git push origin v1.5.0-ohos.4
+python3 installer/publish_gitee.py \
+  --version 1.5.0-ohos.4 \
+  --directory dist \
+  --token-file ~/.config/puro/gitee-release-token
 ```
 
-Tags must use `v` followed by a semantic version. Each subsequent release needs
-a new tag, for example `v1.5.0-ohos.4`. The `Release` workflow:
+The token file should be readable only by its owner (`chmod 600`). The publisher
+also accepts `GITEE_ACCESS_TOKEN` or `GITEE_TOKEN` for CI. Use a token with write
+access to the target repository; keep it outside the source and release assets.
 
-1. Resolves dependencies with Dart 3.11.5 and runs analysis, Dart tests, and
-   installer tests on macOS x64, without formatting source files.
-2. Builds native executables on macOS x64, macOS arm64, and Windows x64.
-3. Embeds the tag's version without `v` and checks the compiled program's version
-   on each platform.
-4. Collects the three executables, generates `SHA256SUMS`, and includes `install.sh`.
-5. Uploads all assets to a draft GitHub Release, then publishes it as the latest
-   release. A failed draft upload can be retried. Already published releases are
-   not overwritten.
+The publisher validates the checksum manifest and remote tag, creates a
+prerelease while uploading, verifies uploaded assets, and marks the release
+stable when complete. Re-running the same command resumes matching uploads;
+conflicting content stops publication. Release notes list the included platforms.
+Retain published version assets for fixed-version installs and rollback.
 
-The `-ohos.3` suffix identifies this fork's version; the workflow publishes it as
-a regular GitHub Release so that `latest/download` works. Every successfully
-published tag becomes the latest release, so publish tags in the intended order.
-The installation commands become usable only after the workflow succeeds.
-
-Puro's `upgrade-puro` command and update notifications still use the upstream
-server by default. Use this installer again to update this fork. If desired,
-disable upstream update notifications by merging `"enableUpdateCheck": false`
-into `~/.puro/prefs.json` (or the corresponding file under `PURO_ROOT`).
+The existing GitHub Actions build matrix can build all three native targets
+from a GitHub mirror. Its publish job uploads to Gitee with the
+`GITEE_ACCESS_TOKEN` Actions secret. Pushing a tag to Gitee alone publishes the
+source tag; local publication uses the Python command above.
 
 ## Local installer checks
 
@@ -97,5 +148,5 @@ bash -n installer/install.sh
 python3 installer/test_install.py
 ```
 
-Tests use local fake release assets and isolated roots; they do not download
-software or change the user's Puro installation.
+These checks use local fake release assets and isolated roots, leaving the user's
+Puro installation and SDK environments unchanged.

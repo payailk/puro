@@ -12,8 +12,10 @@ With Puro you can:
 
 ## Installation
 
-Puro is distributed as a precompiled executable (you do not need Dart installed), see the quick installation
-instructions at https://puro.dev/
+This fork distributes precompiled executables through
+[Gitee Releases](https://gitee.com/robinzzz1/puro/releases). See
+[installation and publishing instructions](https://gitee.com/robinzzz1/puro/blob/master/installer/README.md)
+for macOS and Windows.
 
 ## Quick start
 

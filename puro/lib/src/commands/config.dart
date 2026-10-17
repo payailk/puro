@@ -3,7 +3,16 @@ import '../command_result.dart';
 import '../config.dart';
 import '../terminal.dart';
 
-const _mirrorKeys = {'flutterGitUrl', 'engineGitUrl', 'dartSdkGitUrl', 'flutterStorageBaseUrl', 'releasesJsonUrl', 'ohosFlutterGitUrl', 'ohosFlutterStorageBaseUrl'};
+const _mirrorKeys = {
+  'flutterGitUrl',
+  'engineGitUrl',
+  'dartSdkGitUrl',
+  'flutterStorageBaseUrl',
+  'releasesJsonUrl',
+  'ohosFlutterGitUrl',
+  'ohosFlutterStorageBaseUrl',
+  'puroBuildsUrl',
+};
 
 class ConfigCommand extends PuroCommand {
   ConfigCommand() {
@@ -17,6 +26,9 @@ class ConfigCommand extends PuroCommand {
 
   @override
   final description = 'Manages persistent mirror configuration';
+
+  @override
+  bool get allowUpdateCheck => false;
 }
 
 class _ConfigActionCommand extends PuroCommand {
@@ -80,6 +92,7 @@ class _ConfigActionCommand extends PuroCommand {
       'releasesJsonUrl': config.releasesJsonUrl.toString(),
       'ohosFlutterGitUrl': config.ohosFlutterGitUrl,
       'ohosFlutterStorageBaseUrl': config.ohosFlutterStorageBaseUrl,
+      'puroBuildsUrl': config.puroBuildsUrl.toString(),
     };
     final values = <String, dynamic>{};
     for (final selected in key == null ? _mirrorKeys : [key]) {

@@ -7,6 +7,7 @@ import 'package:pub_semver/pub_semver.dart';
 import '../command.dart';
 import '../command_result.dart';
 import '../config.dart';
+import '../gitee_releases.dart';
 import '../http.dart';
 
 class GenerateDocsCommand extends PuroCommand {
@@ -48,28 +49,25 @@ class GenerateDocsCommand extends PuroCommand {
 
     if (argResults!['deploy'] as bool) {
       // Replace master in the installation instructions with the latest version
-      final httpClient = scope.read(clientProvider);
       var latestVersion = Platform.environment['CIRCLE_TAG'];
       if (latestVersion == null || latestVersion.isEmpty) {
-        final response = await httpClient.get(config.puroLatestVersionUrl);
-        HttpException.ensureSuccess(response);
-        latestVersion = response.body;
+        final release = await findLatestPuroRelease(scope: scope);
+        if (release == null) throw CommandError('Publish a Gitee release for ${config.buildTarget.name} before deploying docs.');
+        latestVersion = release.version!.toString();
       }
       latestVersion = latestVersion.trim();
       // Make sure it's a valid version string
-      Version.parse(latestVersion);
+      final version = tryParseVersion(latestVersion);
+      if (version == null) throw CommandError('Expected a release version, got `$latestVersion`.');
+      latestVersion = '$version';
 
-      final builds = config.puroBuildsUrl;
       final indexFile = docsDir.childFile('index.md');
       var index = await indexFile.readAsString();
-      index = index.replaceAll(
-        builds.append(path: 'master').toString(),
-        builds.append(path: latestVersion).toString(),
-      );
       index = index.replaceAll(
         'PURO_VERSION="master"',
         'PURO_VERSION="$latestVersion"',
       );
+      index = index.replaceAll('PURO_VERSION="latest"', 'PURO_VERSION="$latestVersion"');
       await indexFile.writeAsString(index);
     }
 

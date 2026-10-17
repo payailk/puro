@@ -10,3 +10,5 @@
 # Obsidian
 
 .obsidian/
+
+dist/

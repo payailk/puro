@@ -16,6 +16,7 @@ import 'config.dart';
 import 'extensions.dart';
 import 'file_lock.dart';
 import 'git.dart';
+import 'gitee_releases.dart';
 import 'http.dart';
 import 'logger.dart';
 import 'provider.dart';
@@ -300,13 +301,10 @@ const _kUpdateNotificationThreshold = Duration(days: 1);
 Future<void> _fetchLatestVersionInBackground({required Scope scope}) async {
   final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);
-  final httpClient = scope.read(clientProvider);
-  log.v('Fetching latest version from ${config.puroLatestVersionUrl}');
-  final response = await httpClient.get(config.puroLatestVersionUrl);
-  HttpException.ensureSuccess(response);
-  final body = response.body.trim();
-  Version.parse(body);
-  log.v('Latest version:');
+  log.v('Fetching available ${config.buildTarget.name} releases from ${config.puroBuildsUrl}');
+  final release = await findLatestPuroRelease(scope: scope);
+  final body = release?.version?.toString() ?? '';
+  log.v('Latest available version: $body');
   await writeAtomic(
     scope: scope,
     file: config.puroLatestVersionFile,
@@ -356,7 +354,8 @@ Future<CommandMessage?> checkIfUpdateAvailable({
           now.difference(lastNotification) > _kUpdateNotificationThreshold);
   final shouldVersionCheck =
       !isOutOfDate &&
-      (lastVersionCheck == null ||
+      (!latestVersionFile.existsSync() ||
+          lastVersionCheck == null ||
           now.difference(lastVersionCheck) > _kUpdateVersionCheckThreshold);
   log.d('lastNotification: $lastNotification');
   log.d('latestVersion: $latestVersion');

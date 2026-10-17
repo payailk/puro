@@ -1,3 +1,10 @@
+## 1.5.0-ohos.4
+
+* Install and update this fork through Gitee Releases.
+* Configure the Puro release source with `puro config set puroBuildsUrl` while retaining SDK mirrors.
+* Verify release checksums, platform, and embedded version before replacing Puro.
+* Publish native build assets to Gitee with resumable verification.
+
 ## 1.5.0
 
 * Fixed several major bugs
