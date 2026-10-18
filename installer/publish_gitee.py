@@ -77,6 +77,8 @@ class Gitee:
             if error.status == 404:
                 return None
             raise
+        if release is None:
+            return None
         if not isinstance(release, dict) or release.get("tag_name") != tag or not release.get("id"):
             raise PublishError("Gitee returned an unexpected release")
         return release
