@@ -1,3 +1,9 @@
+## 1.5.0-ohos.6
+
+* Publish macOS arm64, macOS x64, and Windows x64 binaries from source commit `c2b1fd06b580ae2befefdefe923bf76a185a0a3e`.
+* Build pinned Gitee source through the manual native CI matrix, then publish collected artifacts together from the local Gitee publisher.
+* Document Rosetta-based Intel Mac builds and artifact downloads while retaining tag-triggered publication and existing releases.
+
 ## 1.5.0-ohos.5
 
 * Save the Gitee release source using the installed executable after promotion.
