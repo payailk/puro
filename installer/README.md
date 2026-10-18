@@ -1,59 +1,57 @@
-# Installing and releasing this fork
+# 安装与发布此分支
 
-This fork installs and updates precompiled binaries from
-[`robinzzz1/puro` Gitee Releases](https://gitee.com/robinzzz1/puro/releases).
-The user's machine can start with the executable alone. Flutter SDK mirrors are
-configured separately with the existing `puro config` commands.
+此分支通过
+[`robinzzz1/puro` 的 Gitee 发行版](https://gitee.com/robinzzz1/puro/releases)
+安装和更新预编译程序。使用者可直接运行可执行文件；Flutter SDK 镜像通过现有的
+`puro config` 命令单独配置。
 
-## macOS
+## macOS 安装
 
-Use the versioned installer to install the latest published release:
+使用指定版本的安装脚本，安装最新发布的版本：
 
 ```bash
 curl -fsSL https://gitee.com/robinzzz1/puro/releases/download/v1.5.0-ohos.6/install.sh | bash
 ```
 
-Pin both the installer and executable to this release:
+将安装脚本和可执行文件同时固定到此版本：
 
 ```bash
 curl -fsSL https://gitee.com/robinzzz1/puro/releases/download/v1.5.0-ohos.6/install.sh \
   | PURO_VERSION="1.5.0-ohos.6" bash
 ```
 
-The installer supports macOS arm64 and x64 when the selected release contains
-that platform's asset. It reads the Gitee Releases API, follows asset redirects,
-verifies the binary against `SHA256SUMS`, and checks the executable's embedded
-version before running `install-puro --promote`. Download and verification
-failures leave the existing executable untouched. Existing SDK environments and
-SDK mirror settings are retained.
+所选发行版包含对应平台的产物时，安装脚本支持 macOS arm64 和 x64。脚本读取 Gitee
+发行版 API，跟随产物下载地址的重定向，使用 `SHA256SUMS` 校验程序，并核对程序内嵌的
+版本号。所有校验通过后才运行 `install-puro --promote` 并替换原程序；已有 SDK 环境和
+SDK 镜像设置保留。
 
-`PURO_VERSION` defaults to `latest` and accepts versions with or without `v`.
-`PURO_ROOT` defaults to `~/.puro`. Set `PURO_REPOSITORY=owner/repo` for another
-Gitee fork, or `PURO_RELEASES_URL` for a custom Gitee Releases API endpoint.
-The installer saves that endpoint as `puroBuildsUrl` for subsequent updates.
+`PURO_VERSION` 默认为 `latest`，同时接受带 `v` 前缀和纯版本号两种写法。
+`PURO_ROOT` 默认为 `~/.puro`。设置 `PURO_REPOSITORY=owner/repo` 可使用其他 Gitee
+分支仓库；设置 `PURO_RELEASES_URL` 可指定自定义的 Gitee 发行版 API 地址。
+安装脚本会将此地址保存为 `puroBuildsUrl`，供后续更新使用。
 
-Reopen the terminal if PATH was updated, then verify:
+PATH 更新后，重新打开终端并验证：
 
 ```bash
 puro version
 puro --json config list
 ```
 
-The existing SDK selection commands remain available:
+现有 SDK 选择命令继续可用：
 
 ```bash
 puro create harmony --ohos
 puro use harmony
 ```
 
-Run `puro use harmony` in the project directory for project-local selection,
-or `puro use -g harmony` for the global selection.
+在项目目录运行 `puro use harmony` 可选择当前项目使用的环境；
+运行 `puro use -g harmony` 可设置全局环境。
 
-## Windows
+## Windows 安装
 
-Select a release containing `puro-windows-x64.exe` and `SHA256SUMS` on the
-[Gitee Releases page](https://gitee.com/robinzzz1/puro/releases). Download both,
-then run these commands from their directory in PowerShell:
+在 [Gitee 发行版页面](https://gitee.com/robinzzz1/puro/releases)选择包含
+`puro-windows-x64.exe` 和 `SHA256SUMS` 的版本。下载这两个文件，
+然后在它们所在的目录中打开 PowerShell，执行以下命令：
 
 ```powershell
 $entry = Select-String -Path .\SHA256SUMS -Pattern '^[0-9a-fA-F]{64}\s+\*?puro-windows-x64\.exe$'
@@ -66,37 +64,35 @@ if ($actual -ne $expected) { throw 'Puro checksum mismatch' }
 puro --json config set puroBuildsUrl https://gitee.com/api/v5/repos/robinzzz1/puro/releases
 ```
 
-The Windows build is a standalone executable. Available platforms are listed in
-each release body. A release containing only a macOS arm64 binary serves that
-platform; Windows and macOS x64 use their corresponding native build outputs.
+Windows 产物为独立可执行文件。每个发行版的说明正文会列出已提供的平台。
+仅包含 macOS arm64 程序的发行版适用于该平台；Windows 和 macOS x64 使用各自对应的
+原生构建产物。
 
-## Updating Puro
+## 更新 Puro
 
 ```bash
 puro upgrade-puro
 puro upgrade-puro 1.5.0-ohos.6
 ```
 
-Update discovery, notifications, and explicit upgrades share the same Gitee
-release resolver. Automatic discovery selects the highest stable release that
-contains the current platform binary and its checksum. The `master` argument
-selects an explicitly published `master` development release. The existing
-`update-puro` alias and pub-installed command path remain available.
+更新发现、通知和指定版本升级共用同一套 Gitee 发行版解析逻辑。自动更新发现会选择
+包含当前平台程序及其校验信息的最高稳定版本。`master` 参数用于选择已明确发布的
+`master` 开发版本。现有的 `update-puro` 别名和通过 pub 安装时的升级路径继续可用。
 
-The `puroBuildsUrl` preference now means a Gitee Releases API endpoint. Existing
-custom directory-style update sources should be changed to that API format:
+`puroBuildsUrl` 配置项现表示 Gitee 发行版 API 地址。原有的自定义目录式更新源应填写为
+此 API 格式：
 
 ```bash
 puro --json config set puroBuildsUrl https://gitee.com/api/v5/repos/robinzzz1/puro/releases
 ```
 
-The seven existing Flutter, Dart, engine, and OHOS mirror keys keep their SDK
-responsibilities. This preference controls Puro's own release source.
+现有的七个 Flutter、Dart、引擎和 OHOS 镜像配置项继续负责 SDK 镜像。
+此配置项负责 Puro 程序自身的发行源。
 
-## Building and publishing
+## 构建与发布
 
-Use Dart 3.11.5 and a compiler matching the target operating system and
-architecture. The local macOS arm64 build is:
+使用 Dart 3.11.5，并选择与目标操作系统和架构匹配的编译器。
+本地 macOS arm64 构建命令如下：
 
 ```bash
 cd puro
@@ -110,11 +106,11 @@ cp ../installer/install.sh .
 cd ..
 ```
 
-### macOS x64 with Rosetta
+### 使用 Rosetta 构建 macOS x64 版本
 
-On an Apple Silicon Mac with Rosetta installed, use the macOS x64 Dart SDK
-to produce the Intel Mac binary. The local Dart 3.11.5 x64 SDK is installed at
-`$HOME/.cache/puro-build/dart-3.11.5-macos-x64/dart-sdk/bin/dart`:
+在已安装 Rosetta 的 Apple Silicon Mac 上，使用 macOS x64 Dart SDK 生成 Intel Mac
+程序。本地 Dart 3.11.5 x64 SDK 安装路径为
+`$HOME/.cache/puro-build/dart-3.11.5-macos-x64/dart-sdk/bin/dart`：
 
 ```bash
 cd puro
@@ -124,16 +120,14 @@ arch -x86_64 "$HOME/.cache/puro-build/dart-3.11.5-macos-x64/dart-sdk/bin/dart" \
 cd ..
 ```
 
-For a combined release, collect `puro-darwin-arm64`, `puro-darwin-x64`, and
-`puro-windows-x64.exe` in `dist/`, then generate a checksum entry for each binary.
-The version is embedded explicitly through `--define=puro_version`.
+统一发布时，将 `puro-darwin-arm64`、`puro-darwin-x64` 和 `puro-windows-x64.exe`
+汇总到 `dist/`，并为每个程序生成校验记录。版本号通过 `--define=puro_version` 明确写入。
 
-### Native CI builds from pinned Gitee source
+### 基于固定 Gitee 源码提交的原生 CI 构建
 
-The `workflow_dispatch` entry in the GitHub mirror accepts `version` and
-`source_sha`. It fetches the exact 40-character commit anonymously from the fixed
-`https://gitee.com/robinzzz1/puro.git` source, verifies the checked-out SHA, and
-logs the commit used by each platform build:
+GitHub 镜像中的 `workflow_dispatch` 入口接受 `version` 和 `source_sha` 参数。
+工作流从固定的 `https://gitee.com/robinzzz1/puro.git` 源仓库匿名拉取指定的 40 位提交，
+校验检出的 SHA，并在日志中记录各平台构建使用的源码提交：
 
 ```bash
 gh workflow run release.yml --repo payailk/puro --ref master \
@@ -141,16 +135,14 @@ gh workflow run release.yml --repo payailk/puro --ref master \
   -f source_sha=c2b1fd06b580ae2befefdefe923bf76a185a0a3e
 ```
 
-Manual runs compile all three native targets, verify their embedded versions,
-and upload artifacts. They use anonymous Gitee reads and the GitHub artifact
-channel. Gitee credentials stay on the local publishing machine, outside the
-manual build jobs and uploaded artifacts. Tag-push runs retain the existing
-analysis, tests, and automatic Gitee publication using the
-`GITEE_ACCESS_TOKEN` Actions secret.
+手动运行会编译三个平台的原生程序、验证内嵌版本号并上传产物。构建任务匿名读取 Gitee
+源码，通过 GitHub 产物通道上传程序。Gitee 凭证仅保存在本地发布机。
+标签推送触发的工作流继续执行现有的分析、测试和自动 Gitee 发布，发布时使用
+`GITEE_ACCESS_TOKEN` Actions 密钥。
 
-Release `1.5.0-ohos.6` was built successfully for all three platforms by run
-`39087060796` from commit `c2b1fd06b580ae2befefdefe923bf76a185a0a3e`.
-Download each artifact into the same release directory:
+版本 `1.5.0-ohos.6` 的三个平台产物已由运行 `39087060796` 成功构建，
+源码提交为 `c2b1fd06b580ae2befefdefe923bf76a185a0a3e`。
+将各平台产物下载到同一个发布目录：
 
 ```bash
 release_dir=dist/v1.5.0-ohos.6
@@ -162,12 +154,11 @@ gh run download 39087060796 --repo payailk/puro --name puro-windows-x64.exe --di
 cp installer/install.sh "$release_dir/"
 ```
 
-### Unified Gitee publication
+### 统一发布到 Gitee
 
-Commit and push the source, then create its matching Gitee tag before publishing.
-The `v1.5.0-ohos.6` tag identifies the exact CI source commit below. Subsequent
-documentation updates remain separate commits so the tag continues to identify
-the source of the published binaries:
+提交并推送源码，在发布前创建与源码匹配的 Gitee 标签。
+`v1.5.0-ohos.6` 标签固定指向下方所示的 CI 源码提交。后续文档更新使用独立提交，
+确保该标签持续对应已发布程序的实际源码：
 
 ```bash
 git push origin master
@@ -179,28 +170,25 @@ python3 installer/publish_gitee.py \
   --token-file ~/.config/puro/gitee-release-token
 ```
 
-The token file should be readable only by its owner (`chmod 600`). The publisher
-also accepts `GITEE_ACCESS_TOKEN` or `GITEE_TOKEN` for CI. Use a token with write
-access to the target repository; keep it outside the source and release assets.
+令牌文件的读取权限仅授予其所有者（`chmod 600`）。发布脚本也接受 CI 环境中的
+`GITEE_ACCESS_TOKEN` 或 `GITEE_TOKEN`。使用具有目标仓库写入权限的令牌，
+并将其单独保存在源码和发布产物目录之外。
 
-The publisher validates the checksum manifest and remote tag, creates a
-prerelease while uploading, verifies uploaded assets, and marks the release
-stable when complete. Re-running the same command resumes matching uploads;
-conflicting content stops publication. Release notes list the included platforms.
-Retain published version assets for fixed-version installs and rollback.
-Versions `1.5.0-ohos.4` and `1.5.0-ohos.5` remain available alongside `1.5.0-ohos.6`.
+发布脚本先验证校验清单和远端标签，上传期间创建预发布版本，校验已上传的产物，
+全部完成后将发行版标记为稳定版本。重复执行同一命令可继续上传内容匹配的产物；
+内容冲突时暂停发布。发行说明会列出包含的平台。
+保留已发布的版本产物，供固定版本安装和回退使用。
+`1.5.0-ohos.4`、`1.5.0-ohos.5` 和 `1.5.0-ohos.6` 继续同时提供。
 
-The existing GitHub Actions build matrix can build all three native targets
-from a GitHub mirror. Its publish job uploads to Gitee with the
-`GITEE_ACCESS_TOKEN` Actions secret. Pushing a tag to Gitee alone publishes the
-source tag; local publication uses the Python command above.
+现有 GitHub Actions 构建矩阵支持从 GitHub 镜像构建三个平台的原生程序，
+其发布任务使用 `GITEE_ACCESS_TOKEN` Actions 密钥将产物上传到 Gitee。
+向 Gitee 推送标签用于发布源码标签；在本地执行上述 Python 命令可发布程序产物。
 
-## Local installer checks
+## 本地安装脚本检查
 
 ```bash
 bash -n installer/install.sh
 python3 installer/test_install.py
 ```
 
-These checks use local fake release assets and isolated roots, leaving the user's
-Puro installation and SDK environments unchanged.
+这些检查使用本地模拟发行产物和独立根目录，使用者现有的 Puro 安装及 SDK 环境保留。
