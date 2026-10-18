@@ -122,7 +122,7 @@ puro_install() (
     exit 1
   fi
   "$download_dir/$asset" install-puro --promote
-  "$download_dir/$asset" --no-install --no-update-check --json config set puroBuildsUrl "$releases_url"
+  "$PURO_ROOT/bin/puro" --no-install --no-update-check --json config set puroBuildsUrl "$releases_url"
 )
 
 puro_install

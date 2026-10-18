@@ -10,14 +10,14 @@ configured separately with the existing `puro config` commands.
 Use the versioned installer to install the latest published release:
 
 ```bash
-curl -fsSL https://gitee.com/robinzzz1/puro/releases/download/v1.5.0-ohos.4/install.sh | bash
+curl -fsSL https://gitee.com/robinzzz1/puro/releases/download/v1.5.0-ohos.5/install.sh | bash
 ```
 
 Pin both the installer and executable to this release:
 
 ```bash
-curl -fsSL https://gitee.com/robinzzz1/puro/releases/download/v1.5.0-ohos.4/install.sh \
-  | PURO_VERSION="1.5.0-ohos.4" bash
+curl -fsSL https://gitee.com/robinzzz1/puro/releases/download/v1.5.0-ohos.5/install.sh \
+  | PURO_VERSION="1.5.0-ohos.5" bash
 ```
 
 The installer supports macOS arm64 and x64 when the selected release contains
@@ -74,7 +74,7 @@ platform; Windows and macOS x64 use their corresponding native build outputs.
 
 ```bash
 puro upgrade-puro
-puro upgrade-puro 1.5.0-ohos.4
+puro upgrade-puro 1.5.0-ohos.5
 ```
 
 Update discovery, notifications, and explicit upgrades share the same Gitee
@@ -103,7 +103,7 @@ cd puro
 puro -e harmony dart pub get
 mkdir -p ../dist
 puro -e harmony dart compile exe bin/puro.dart \
-  -o ../dist/puro-darwin-arm64 --define=puro_version=1.5.0-ohos.4
+  -o ../dist/puro-darwin-arm64 --define=puro_version=1.5.0-ohos.5
 cd ../dist
 shasum -a 256 puro-darwin-arm64 > SHA256SUMS
 cp ../installer/install.sh .
@@ -118,10 +118,10 @@ Commit the source, push it, and create the matching Gitee tag before publishing:
 
 ```bash
 git push origin master
-git tag v1.5.0-ohos.4
-git push origin v1.5.0-ohos.4
+git tag v1.5.0-ohos.5
+git push origin v1.5.0-ohos.5
 python3 installer/publish_gitee.py \
-  --version 1.5.0-ohos.4 \
+  --version 1.5.0-ohos.5 \
   --directory dist \
   --token-file ~/.config/puro/gitee-release-token
 ```

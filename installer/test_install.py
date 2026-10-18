@@ -96,7 +96,7 @@ case "$*" in
     ;;
   "install-puro --promote")
 printf '%s\\n' "$@" "$PURO_ROOT" > "$TEST_CALL"
-cp "$0" "$PURO_ROOT/bin/puro"
+mv "$0" "$PURO_ROOT/bin/puro"
 exit "${TEST_INSTALL_EXIT:-0}"
     ;;
   "--no-install --no-update-check --json config set puroBuildsUrl "*)
@@ -197,7 +197,7 @@ esac
 
     @unittest.skipUnless(shutil.which("shasum"), "shasum is not installed")
     def test_shasum_fallback(self):
-        for command in ("bash", "mkdir", "mktemp", "rm", "awk", "chmod", "shasum", "cp"):
+        for command in ("bash", "mkdir", "mktemp", "rm", "awk", "chmod", "shasum", "mv"):
             (self.commands / command).symlink_to(shutil.which(command))
         self.env["PATH"] = str(self.commands)
         result = self.run_installer()

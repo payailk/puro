@@ -1,3 +1,8 @@
+## 1.5.0-ohos.5
+
+* Save the Gitee release source using the installed executable after promotion.
+* Handle Gitee's empty release response while preparing a new release.
+
 ## 1.5.0-ohos.4
 
 * Install and update this fork through Gitee Releases.
